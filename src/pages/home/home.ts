@@ -1,92 +1,67 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams } from 'ionic-angular';
-import { Geolocation } from '@ionic-native/geolocation';
+import { IonicPage, NavController } from 'ionic-angular';
 
+import { Geolocation, Geoposition } from '@ionic-native/geolocation';
 import {
- GoogleMaps,
- GoogleMap,
- GoogleMapsEvent,
- LatLng,
- CameraPosition,
- MarkerOptions,
- Marker
+	GoogleMaps,
+	GoogleMap,
+	GoogleMapsEvent,
+	LatLng,
+	MarkerOptions
 } from '@ionic-native/google-maps';
 
+@IonicPage()
 @Component({
-  selector: 'page-home',
-  templateUrl: 'home.html'
+	selector: 'page-home',
+	templateUrl: 'home.html'
 })
 export class HomePage {
 
-	latitude:number;
-	longitude:number;
+	private _map: GoogleMap;
+	constructor(
+		private navCtrl: NavController,
+		private geolocation: Geolocation,
+		private googleMaps: GoogleMaps
+	) { }
 
-  constructor(public navCtrl: NavController,
-  			  public navParams: NavParams,
-  			  private gMaps: GoogleMaps,
-  			  private geolocation: Geolocation) {}
+	ionViewWillEnter() {
+		this._obtenerPosicion();
+	}
 
-	  ngAfterViewInit() {
+	private _obtenerPosicion(): any {
+		this.geolocation.getCurrentPosition()
+			.then(response => this._loadMap(response))
+			.catch(error => console.log(error));
+	}
 
-			this.loadMap();
-	   
-	  }
+	private _loadMap(postion: Geoposition) {
+		let element: HTMLElement = document.getElementById('map');
+		this._map = this.googleMaps.create(element);
 
-  loadMap(){
+		let target: LatLng = new LatLng(postion.coords.latitude, postion.coords.longitude);
 
-  	let element = document.getElementById('map');
+		this._map.one(GoogleMapsEvent.MAP_READY).then(() => {
+			this._moveCamera(target);
+			this._addMarker(target);
+		});
 
-  	let options = { timeout: 20000, enableHighAcurrancy:true }
+	}
 
-  	//let lat = 19.4471147;
-  	//let long = -99.14911029999999;
+	private _addMarker(position: LatLng) {
+		let markerOptions: MarkerOptions = {
+			position,
+			title: 'I am Here :D'
+		};
+		this._map.addMarker(markerOptions);
+	}
 
-  	let map :GoogleMap = this.gMaps.create(element, {});
-
-  	//console.log(latitude,longitude);
-
-  this.geolocation.getCurrentPosition(options).then(response => {
-
-  	
-
-  	let latlng = new LatLng(response.coords.latitude, response.coords.longitude);
-
-  	map.one(GoogleMapsEvent.MAP_READY).then(() => {
-
-		  let position: CameraPosition = {
-
-			 		target: latlng,
-			 		zoom:10,
-			 		tilt:30
-			 	}
-
-  		map.moveCamera(position);
-
-	  	let markerOptions: MarkerOptions = {
-
-	  		position: latlng,
-	  		title:'Biblioteca'
-	  	};
-
-	  	let marker = map.addMarker(markerOptions).then((marker:Marker) =>{
-
-	  		marker.showInfoWindow();
-
-	  	});			
-
-  	})
-
-
-
-
-  })
-
-  	
-
-  	
-
-
-
-  }
-
+	private _moveCamera(target) {
+		this._map.animateCamera({
+			target,
+			zoom: 14,
+			tilt: 0,
+			bearing: 0,
+			duration: 1000
+		});
+	}
 }

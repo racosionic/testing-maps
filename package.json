@@ -36,15 +36,21 @@
     "typescript": "~2.2.1"
   },
   "cordovaPlugins": [
+    "ionic-plugin-keyboard",
     "cordova-plugin-whitelist",
     "cordova-plugin-console",
     "cordova-plugin-statusbar",
     "cordova-plugin-device",
     "cordova-plugin-splashscreen",
-    "ionic-plugin-keyboard"
+    "cordova-plugin-geolocation",
+    "cordova-plugin-compat"
   ],
   "cordovaPlatforms": [
-    "ios",
+    {
+      "platform": "android",
+      "version": "",
+      "locator": "android"
+    },
     {
       "platform": "ios",
       "version": "",
